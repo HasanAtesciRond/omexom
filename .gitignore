@@ -1,0 +1,46 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables with sensitive data
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data files (large files, not tracked)
+data/input/*.txt
+data/input/*.ttl
+data/output/*.xlsx
+data/output/*.csv
+data/output/*.json
+data/output/*.txt
+data/examples/*.pdf
+data/examples/*.xlsx
+
+# Temporary files
+~$*.xlsx
+*.tmp
+*.bak
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Streamlit cache
+.streamlit/cache/
+
+# OS files
+.DS_Store
+Thumbs.db
