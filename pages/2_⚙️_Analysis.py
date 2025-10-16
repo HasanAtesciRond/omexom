@@ -36,8 +36,8 @@ if merge_mode == "merge_with_rdf":
             if st.button("➡️ Naar Upload Pagina"):
                 st.switch_page("pages/1_📤_Upload.py")
         with col2:
-            if st.button("➡️ Naar Manual Input"):
-                st.switch_page("pages/1.5_✍️_Manual_Input.py")
+            if st.button("➡️ Naar Criteria & Custom Requirements"):
+                st.switch_page("pages/5_🔍_Criteria.py")
         st.stop()
 
     st.info(f"📎 **Merge Mode:** {len(rdf_requirements)} RDF + {len(custom_requirements)} Custom = **{len(requirements)} totaal**")
@@ -47,8 +47,8 @@ elif merge_mode == "custom_only":
 
     if not requirements:
         st.warning("⚠️ Geen custom requirements gevonden. Voeg custom requirements toe op de Manual Input pagina.")
-        if st.button("➡️ Naar Manual Input"):
-            st.switch_page("pages/1.5_✍️_Manual_Input.py")
+        if st.button("➡️ Naar Criteria & Custom Requirements"):
+            st.switch_page("pages/5_🔍_Criteria.py")
         st.stop()
 
     st.info(f"✍️ **Custom Only Mode:** {len(requirements)} custom requirements")
