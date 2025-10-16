@@ -32,13 +32,12 @@ with tab1:
     for idx, criterion in enumerate(CRITERIA_ORDER, 1):
         info = CRITERIA[criterion]
 
-        with st.expander(f"{idx}. {info['icon']} {info['name_nl'].upper()} - {info['name_en']}", expanded=False):
+        with st.expander(f"{idx}. {info['icon']} {info['name_nl'].upper()} - {info['name']}", expanded=False):
             col1, col2 = st.columns([2, 1])
 
             with col1:
                 st.markdown(f"**Nederlandse naam:** {info['name_nl']}")
-                st.markdown(f"**Engelse naam:** {info['name_en']}")
-                st.markdown(f"**Vraag:** {info['question_nl']}")
+                st.markdown(f"**Engelse naam:** {info['name']}")
                 st.markdown(f"**Beschrijving:** {info['description_nl']}")
                 st.markdown(f"**Richtlijn:** {info['guidance_nl']}")
 
