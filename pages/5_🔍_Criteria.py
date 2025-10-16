@@ -75,6 +75,137 @@ with tab1:
     De LLM geeft voor elk criterium een boolean (true/false) en een justification in het Nederlands.
     """)
 
+    st.markdown("---")
+    st.markdown("### 🎨 Custom Criteria (Experimental)")
+
+    st.info("""
+    **Nieuw!** Je kunt nu je eigen kwaliteitscriteria definiëren.
+    Een LLM zal automatisch de analysis prompt aanpassen op basis van jouw custom criteria.
+    """)
+
+    # Initialize custom criteria in session state
+    if 'custom_criteria' not in st.session_state:
+        st.session_state['custom_criteria'] = []
+
+    if 'use_custom_criteria' not in st.session_state:
+        st.session_state['use_custom_criteria'] = False
+
+    # Toggle for using custom criteria
+    use_custom = st.checkbox(
+        "🔄 Gebruik Custom Criteria voor Analyse",
+        value=st.session_state['use_custom_criteria'],
+        help="Wanneer aangevinkt, worden jouw custom criteria gebruikt i.p.v. ISO 29148"
+    )
+    st.session_state['use_custom_criteria'] = use_custom
+
+    if not use_custom:
+        st.warning("⚠️ Custom criteria zijn UITGESCHAKELD. De standaard ISO 29148 criteria worden gebruikt.")
+    else:
+        st.success("✅ Custom criteria zijn INGESCHAKELD. Jouw criteria worden gebruikt voor analyse.")
+
+    # Show current custom criteria
+    custom_crit_col1, custom_crit_col2 = st.columns([2, 1])
+
+    with custom_crit_col1:
+        st.markdown("#### 📝 Huidige Custom Criteria")
+
+        if not st.session_state['custom_criteria']:
+            st.info("Nog geen custom criteria gedefinieerd.")
+        else:
+            for idx, criterion in enumerate(st.session_state['custom_criteria']):
+                with st.expander(f"{idx+1}. {criterion['name']}"):
+                    st.markdown(f"**Naam:** {criterion['name']}")
+                    st.markdown(f"**Beschrijving:** {criterion['description']}")
+                    if criterion.get('guidance'):
+                        st.markdown(f"**Guidance:** {criterion['guidance']}")
+
+                    if st.button("🗑️ Verwijder", key=f"del_crit_{idx}"):
+                        st.session_state['custom_criteria'].pop(idx)
+                        st.rerun()
+
+    with custom_crit_col2:
+        st.markdown("#### ➕ Nieuw Criterium")
+
+        with st.form("add_custom_criterion"):
+            crit_name = st.text_input(
+                "Criterium Naam*",
+                placeholder="Bijvoorbeeld: Security",
+                help="Naam van het kwaliteitscriterium"
+            )
+
+            crit_desc = st.text_area(
+                "Beschrijving*",
+                height=100,
+                placeholder="Bijvoorbeeld: De requirement moet voldoen aan security best practices...",
+                help="Wat evalueert dit criterium?"
+            )
+
+            crit_guidance = st.text_area(
+                "Guidance (optioneel)",
+                height=80,
+                placeholder="Bijvoorbeeld: Check op gebruik van encryption, authentication, authorization...",
+                help="Hoe moet dit criterium geëvalueerd worden?"
+            )
+
+            add_criterion_btn = st.form_submit_button("➕ Voeg Criterium Toe", use_container_width=True)
+
+            if add_criterion_btn:
+                if not crit_name or not crit_desc:
+                    st.error("❌ Naam en Beschrijving zijn verplicht!")
+                else:
+                    new_criterion = {
+                        'name': crit_name.strip(),
+                        'description': crit_desc.strip(),
+                        'guidance': crit_guidance.strip() if crit_guidance else None,
+                        'created_at': datetime.now().isoformat()
+                    }
+
+                    st.session_state['custom_criteria'].append(new_criterion)
+                    st.success(f"✅ Criterium '{crit_name}' toegevoegd!")
+                    st.rerun()
+
+    # Generate/Preview prompt button
+    if st.session_state['custom_criteria'] and use_custom:
+        st.markdown("---")
+        st.markdown("#### 🤖 LLM-Generated Prompt Preview")
+
+        if st.button("🔄 Genereer Preview van Aangepaste Prompt", type="primary"):
+            from utils.prompt_generator import PromptGenerator
+            from config.settings import SESSION_KEYS
+
+            config = st.session_state.get(SESSION_KEYS['analyzer_config'])
+
+            if not config or not config['azure_endpoint'] or not config['api_key']:
+                st.error("❌ Azure OpenAI niet geconfigureerd. Ga naar de homepage om credentials in te stellen.")
+            else:
+                with st.spinner("🤖 LLM genereert aangepaste prompt..."):
+                    try:
+                        generator = PromptGenerator(
+                            azure_endpoint=config['azure_endpoint'],
+                            api_key=config['api_key'],
+                            api_version=config['api_version'],
+                            model_name=config['model_name']
+                        )
+
+                        generated_prompt = generator.generate_custom_prompt(st.session_state['custom_criteria'])
+
+                        st.success("✅ Prompt gegenereerd!")
+
+                        # Store in session state for use in analysis
+                        st.session_state['generated_custom_prompt'] = generated_prompt
+
+                        # Display the generated prompt
+                        with st.expander("👁️ Bekijk Gegenereerde Prompt", expanded=True):
+                            st.code(generated_prompt, language="text")
+
+                        st.info("💾 Deze prompt wordt automatisch gebruikt wanneer je de analyse start met 'Gebruik Custom Criteria' aangevinkt.")
+
+                    except Exception as e:
+                        st.error(f"❌ Fout bij genereren prompt: {str(e)}")
+
+    elif st.session_state['custom_criteria'] and not use_custom:
+        st.warning("⚠️ Je hebt custom criteria gedefinieerd, maar ze zijn niet actief. Vink 'Gebruik Custom Criteria' aan om ze te gebruiken.")
+
 # Tab 2: Criteria Analysis (Only if results exist)
 with tab2:
     # Check if analysis results exist

@@ -31,7 +31,8 @@ class RequirementsAnalyzer:
         model_name: str = "o3-mini-1",
         batch_size: int = 5,
         max_completion_tokens: int = 10000,
-        concurrent_workers: int = 15
+        concurrent_workers: int = 15,
+        custom_system_prompt: Optional[str] = None
     ):
         """
         Initialize the analyzer with Azure OpenAI credentials.
@@ -44,6 +45,7 @@ class RequirementsAnalyzer:
             batch_size: Number of requirements per batch
             max_completion_tokens: Max tokens for completion
             concurrent_workers: Number of parallel workers
+            custom_system_prompt: Optional custom system prompt (overrides default ISO 29148 prompt)
         """
         self.azure_endpoint = azure_endpoint
         self.api_key = api_key
@@ -52,6 +54,7 @@ class RequirementsAnalyzer:
         self.batch_size = batch_size
         self.max_completion_tokens = max_completion_tokens
         self.concurrent_workers = concurrent_workers
+        self.custom_system_prompt = custom_system_prompt
 
         try:
             self.client = AzureOpenAI(
@@ -66,7 +69,7 @@ class RequirementsAnalyzer:
 
     def analyze_batch_with_llm(self, batch: List[Dict]) -> List[Dict]:
         """
-        Sends a batch of requirements to the LLM for ISO/IEC/IEEE 29148 quality analysis.
+        Sends a batch of requirements to the LLM for quality analysis.
 
         Args:
             batch: List of requirement dictionaries with 'id', 'text', and optional 'parent_context'
@@ -78,50 +81,13 @@ class RequirementsAnalyzer:
             logging.error("API client is not initialized. Skipping analysis.")
             return []
 
-        system_prompt = """
-        U bent een expert in requirements engineering en systems engineering, gespecialiseerd in het analyseren van eisen volgens de ISO/IEC/IEEE 29148 standaard.
-
-        Uw taak is om een lijst met eisen te analyseren op basis van de kwaliteitscriteria zoals gedefinieerd in ISO/IEC/IEEE 29148.
-        Voor elke eis krijgt u de specifieke tekst en, indien beschikbaar, de tekst van de overkoepelende 'oudereis' voor context.
-        Baseer uw analyse op de specifieke eis, maar gebruik de oudereis om de relevantie en het doel beter te begrijpen.
-
-        Evalueer elke eis op de volgende ISO/IEC/IEEE 29148 kwaliteitscriteria:
-
-        1. NECESSARY (Noodzakelijk): Is de eis noodzakelijk en voegt deze waarde toe aan het systeem?
-        2. UNAMBIGUOUS (Eenduidig): Is de eis duidelijk geformuleerd zonder ruimte voor meerdere interpretaties?
-        3. COMPLETE (Compleet): Bevat de eis alle noodzakelijke informatie zonder TBD's of open punten?
-        4. SINGULAR (Enkelvoudig): Beschrijft de eis slechts één specifieke eis (geen 'en/of' constructies)?
-        5. FEASIBLE (Haalbaar): Is de eis technisch en economisch realiseerbaar binnen de context?
-        6. VERIFIABLE (Verifieerbaar): Kan de eis objectief getest of geverifieerd worden?
-        7. TRACEABLE (Traceerbaar): Is de eis identificeerbaar en traceerbaar?
-        8. IMPLEMENTATION_FREE (Implementatie-onafhankelijk): Beschrijft de eis WAT er nodig is, niet HOE het moet worden geïmplementeerd?
-
-        De input is in het Nederlands en uw volledige output, inclusief alle rechtvaardigingen en suggesties, moet ook in het Nederlands zijn.
-
-        Uw antwoord MOET een enkel, geldig JSON-object zijn dat één sleutel bevat, "results", die een lijst met woordenboeken bevat.
-        Elk woordenboek moet overeenkomen met een input-eis en de volgende Engelse sleutels bevatten:
-        - "id": De identificatiecode van de specifieke eis.
-        - "necessary": Een boolean (true/false).
-        - "necessary_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "unambiguous": Een boolean (true/false).
-        - "unambiguous_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "complete": Een boolean (true/false).
-        - "complete_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "singular": Een boolean (true/false).
-        - "singular_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "feasible": Een boolean (true/false).
-        - "feasible_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "verifiable": Een boolean (true/false).
-        - "verifiable_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "traceable": Een boolean (true/false).
-        - "traceable_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "implementation_free": Een boolean (true/false).
-        - "implementation_free_justification": Een string in het Nederlands die uw beslissing uitlegt.
-        - "quality_score": Een geheel getal van 0 tot 8 (aantal criteria dat wordt voldaan).
-        - "suggestion": Een string in het Nederlands met een concreet voorstel om de eis te verbeteren volgens ISO/IEC/IEEE 29148.
-
-        Lever geen tekst of uitleg buiten deze JSON-structuur.
-        """
+        # Use custom system prompt if provided, otherwise use default ISO 29148 prompt
+        if self.custom_system_prompt:
+            system_prompt = self.custom_system_prompt
+            logging.info("Using custom system prompt for analysis.")
+        else:
+            system_prompt = self._get_default_system_prompt()
+            logging.info("Using default ISO/IEC/IEEE 29148 system prompt.")
 
         user_prompt = json.dumps(batch, ensure_ascii=False, indent=2)
 
@@ -267,3 +233,50 @@ class RequirementsAnalyzer:
 
         logging.info(f"Analysis complete. Processed {len(all_analyses)} requirements.")
         return all_analyses
+
+    def _get_default_system_prompt(self) -> str:
+        """Returns the default ISO/IEC/IEEE 29148 system prompt."""
+        return """
+U bent een expert in requirements engineering en systems engineering, gespecialiseerd in het analyseren van eisen volgens de ISO/IEC/IEEE 29148 standaard.
+
+Uw taak is om een lijst met eisen te analyseren op basis van de kwaliteitscriteria zoals gedefinieerd in ISO/IEC/IEEE 29148.
+Voor elke eis krijgt u de specifieke tekst en, indien beschikbaar, de tekst van de overkoepelende 'oudereis' voor context.
+Baseer uw analyse op de specifieke eis, maar gebruik de oudereis om de relevantie en het doel beter te begrijpen.
+
+Evalueer elke eis op de volgende ISO/IEC/IEEE 29148 kwaliteitscriteria:
+
+1. NECESSARY (Noodzakelijk): Is de eis noodzakelijk en voegt deze waarde toe aan het systeem?
+2. UNAMBIGUOUS (Eenduidig): Is de eis duidelijk geformuleerd zonder ruimte voor meerdere interpretaties?
+3. COMPLETE (Compleet): Bevat de eis alle noodzakelijke informatie zonder TBD's of open punten?
+4. SINGULAR (Enkelvoudig): Beschrijft de eis slechts één specifieke eis (geen 'en/of' constructies)?
+5. FEASIBLE (Haalbaar): Is de eis technisch en economisch realiseerbaar binnen de context?
+6. VERIFIABLE (Verifieerbaar): Kan de eis objectief getest of geverifieerd worden?
+7. TRACEABLE (Traceerbaar): Is de eis identificeerbaar en traceerbaar?
+8. IMPLEMENTATION_FREE (Implementatie-onafhankelijk): Beschrijft de eis WAT er nodig is, niet HOE het moet worden geïmplementeerd?
+
+De input is in het Nederlands en uw volledige output, inclusief alle rechtvaardigingen en suggesties, moet ook in het Nederlands zijn.
+
+Uw antwoord MOET een enkel, geldig JSON-object zijn dat één sleutel bevat, "results", die een lijst met woordenboeken bevat.
+Elk woordenboek moet overeenkomen met een input-eis en de volgende Engelse sleutels bevatten:
+- "id": De identificatiecode van de specifieke eis.
+- "necessary": Een boolean (true/false).
+- "necessary_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "unambiguous": Een boolean (true/false).
+- "unambiguous_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "complete": Een boolean (true/false).
+- "complete_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "singular": Een boolean (true/false).
+- "singular_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "feasible": Een boolean (true/false).
+- "feasible_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "verifiable": Een boolean (true/false).
+- "verifiable_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "traceable": Een boolean (true/false).
+- "traceable_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "implementation_free": Een boolean (true/false).
+- "implementation_free_justification": Een string in het Nederlands die uw beslissing uitlegt.
+- "quality_score": Een geheel getal van 0 tot 8 (aantal criteria dat wordt voldaan).
+- "suggestion": Een string in het Nederlands met een concreet voorstel om de eis te verbeteren volgens ISO/IEC/IEEE 29148.
+
+Lever geen tekst of uitleg buiten deze JSON-structuur.
+"""

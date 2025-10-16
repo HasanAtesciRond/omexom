@@ -101,6 +101,20 @@ with col4:
 
 st.markdown("---")
 
+# Show criteria mode status
+use_custom_criteria = st.session_state.get('use_custom_criteria', False)
+
+if use_custom_criteria:
+    custom_criteria_count = len(st.session_state.get('custom_criteria', []))
+    if custom_criteria_count > 0:
+        st.success(f"🎨 **Custom Criteria Mode Actief** - {custom_criteria_count} custom criteria zullen worden gebruikt")
+    else:
+        st.warning("⚠️ Custom criteria mode is ingeschakeld maar geen criteria gedefinieerd - standaard ISO 29148 wordt gebruikt")
+else:
+    st.info("📋 **Standaard Mode** - ISO/IEC/IEEE 29148 criteria worden gebruikt (8 criteria)")
+
+st.markdown("---")
+
 # Start analysis button
 if not st.session_state.get(SESSION_KEYS['analysis_in_progress'], False):
     st.markdown("### 🚀 Start Analyse")
@@ -114,7 +128,50 @@ else:
     # Analysis is running
     st.markdown("### ⏳ Analyse Bezig...")
 
-    # Create analyzer
+    # Check if custom criteria are enabled
+    use_custom_criteria = st.session_state.get('use_custom_criteria', False)
+    custom_prompt = None
+
+    if use_custom_criteria:
+        # Use custom generated prompt if available
+        custom_prompt = st.session_state.get('generated_custom_prompt')
+
+        if not custom_prompt:
+            # Generate it on the fly if not already generated
+            custom_criteria = st.session_state.get('custom_criteria', [])
+
+            if custom_criteria:
+                st.info("🤖 Custom criteria gedetecteerd - genereer aangepaste prompt...")
+
+                from utils.prompt_generator import PromptGenerator
+
+                try:
+                    generator = PromptGenerator(
+                        azure_endpoint=config['azure_endpoint'],
+                        api_key=config['api_key'],
+                        api_version=config['api_version'],
+                        model_name=config['model_name']
+                    )
+
+                    custom_prompt = generator.generate_custom_prompt(custom_criteria)
+                    st.session_state['generated_custom_prompt'] = custom_prompt
+                    st.success("✅ Aangepaste prompt gegenereerd!")
+
+                except Exception as e:
+                    st.error(f"❌ Fout bij genereren custom prompt: {str(e)}")
+                    st.warning("⚠️ Terugvallen op standaard ISO 29148 prompt...")
+                    use_custom_criteria = False
+            else:
+                st.warning("⚠️ Custom criteria ingeschakeld maar geen criteria gedefinieerd. Gebruik standaard ISO 29148 criteria.")
+                use_custom_criteria = False
+
+    # Show which criteria mode is being used
+    if use_custom_criteria and custom_prompt:
+        st.success(f"🎨 **Criteria Mode:** Custom Criteria ({len(st.session_state.get('custom_criteria', []))} criteria)")
+    else:
+        st.info("📋 **Criteria Mode:** ISO/IEC/IEEE 29148 (8 standaard criteria)")
+
+    # Create analyzer with optional custom prompt
     analyzer = RequirementsAnalyzer(
         azure_endpoint=config['azure_endpoint'],
         api_key=config['api_key'],
@@ -122,7 +179,8 @@ else:
         model_name=config['model_name'],
         batch_size=config['batch_size'],
         max_completion_tokens=config['max_completion_tokens'],
-        concurrent_workers=config['concurrent_workers']
+        concurrent_workers=config['concurrent_workers'],
+        custom_system_prompt=custom_prompt if use_custom_criteria else None
     )
 
     # Progress containers
