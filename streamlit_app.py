@@ -11,6 +11,7 @@ from config.settings import PAGE_TITLE, PAGE_ICON, LAYOUT, SESSION_KEYS
 # Load environment variables from .env file
 load_dotenv()
 
+# st.sidebar.image("Omexom-site-corp@2x-1.webp")
 # Page configuration
 st.set_page_config(
     page_title=PAGE_TITLE,
@@ -18,6 +19,9 @@ st.set_page_config(
     layout=LAYOUT,
     initial_sidebar_state="expanded"
 )
+
+st.image("Omexom-site-corp@2x-1.webp")
+
 
 # Initialize session state
 def init_session_state():
@@ -106,8 +110,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Main page content
-st.markdown('<div class="main-header">📊 ISO 29148 Requirements Quality Analyzer</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Analyseer requirements op basis van internationale standaarden</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">📊 OMEXOM Tender Analysis </div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">AI-driven Tender Analysis Tool</div>', unsafe_allow_html=True)
+st.markdown("Powered By")
+st.markdown("Business Analytics Amersfoort")
+st.image("axians-1-1.webp", width=150)
+
 
 # Navigation instructions
 st.markdown("---")
