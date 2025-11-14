@@ -29,6 +29,9 @@ def init_session_state():
     if SESSION_KEYS['uploaded_file'] not in st.session_state:
         st.session_state[SESSION_KEYS['uploaded_file']] = None
 
+    if SESSION_KEYS['uploaded_filename'] not in st.session_state:
+        st.session_state[SESSION_KEYS['uploaded_filename']] = None
+
     if SESSION_KEYS['requirements'] not in st.session_state:
         st.session_state[SESSION_KEYS['requirements']] = None
 

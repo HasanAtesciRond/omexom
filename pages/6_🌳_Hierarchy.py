@@ -56,7 +56,7 @@ st.markdown("### 🌲 Hiërarchie Boom")
 st.info("💡 Tip: Klik op segmenten om in/uit te zoomen")
 
 fig_tree = create_hierarchy_tree(df, requirements)
-st.plotly_chart(fig_tree, use_container_width=True)
+st.plotly_chart(fig_tree, width='stretch')
 
 st.markdown("---")
 

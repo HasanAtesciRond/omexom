@@ -84,7 +84,7 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     fig_histogram = create_quality_score_histogram(df)
-    st.plotly_chart(fig_histogram, use_container_width=True)
+    st.plotly_chart(fig_histogram, width='stretch')
 
 with col2:
     st.markdown("#### Score Verdeling")
@@ -116,7 +116,7 @@ st.markdown("---")
 st.markdown("### ✅ ISO 29148 Criteria Pass Rates")
 
 fig_criteria = create_criteria_pass_rate_chart(df)
-st.plotly_chart(fig_criteria, use_container_width=True)
+st.plotly_chart(fig_criteria, width='stretch')
 
 # Criteria details
 st.markdown("#### Criteria Details")
@@ -158,7 +158,7 @@ st.markdown("---")
 if requirements and df[df['parent_id'].notna()].shape[0] > 0:
     st.markdown("### 🌳 Parent-Child Quality Heatmap")
     fig_treemap = create_parent_quality_treemap(df, requirements)
-    st.plotly_chart(fig_treemap, use_container_width=True)
+    st.plotly_chart(fig_treemap, width='stretch')
 else:
     st.info("ℹ️ Geen parent-child relaties gevonden in de data")
 
@@ -169,7 +169,7 @@ st.markdown("### 🔥 Failure Matrix - Slechtste Requirements")
 
 top_n = st.slider("Aantal slechtste requirements", min_value=10, max_value=100, value=50, step=10)
 fig_heatmap = create_failure_heatmap(df, top_n=top_n)
-st.plotly_chart(fig_heatmap, use_container_width=True)
+st.plotly_chart(fig_heatmap, width='stretch')
 
 # Sidebar
 with st.sidebar:
@@ -180,8 +180,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🔍 Quick Actions")
 
-    if st.button("📋 Naar Resultaten", use_container_width=True):
+    if st.button("📋 Naar Resultaten", width='stretch'):
         st.switch_page("pages/4_📋_Results.py")
 
-    if st.button("💾 Naar Export", use_container_width=True):
+    if st.button("💾 Naar Export", width='stretch'):
         st.switch_page("pages/7_💾_Export.py")

@@ -11,7 +11,7 @@ from config.settings import SESSION_KEYS
 
 st.set_page_config(page_title="Run Analysis", page_icon="⚙️", layout="wide")
 
-st.title("⚙️ ISO 29148 Analyse")
+st.title("⚙️ ISO 29148 Analyse met INCASO Eisen")
 st.markdown("Start de requirements quality analyse met Azure OpenAI")
 
 # Check if requirements are loaded
@@ -61,7 +61,7 @@ if not st.session_state.get(SESSION_KEYS['analysis_in_progress'], False):
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("▶️ Start ISO 29148 Analyse", type="primary", use_container_width=True):
+        if st.button("▶️ Start ISO 29148 Analyse", type="primary", width='stretch'):
             st.session_state[SESSION_KEYS['analysis_in_progress']] = True
             st.rerun()
 else:
@@ -163,7 +163,7 @@ else:
             with col2:
                 st.success("✅ Analyse voltooid! Bekijk de resultaten in het Dashboard.")
 
-                if st.button("➡️ Naar Dashboard", type="primary", use_container_width=True, key="goto_dashboard"):
+                if st.button("➡️ Naar Dashboard", type="primary", width='stretch', key="goto_dashboard"):
                     # Ensure analysis_in_progress is False before navigation
                     st.session_state[SESSION_KEYS['analysis_in_progress']] = False
                     st.switch_page("pages/3_📊_Dashboard.py")

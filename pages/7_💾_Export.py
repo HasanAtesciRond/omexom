@@ -4,7 +4,7 @@ Download analysis results in various formats (Excel, CSV, JSON)
 """
 
 import streamlit as st
-import pandas as pd
+import os
 from datetime import datetime
 from utils.export_utils import (
     create_excel_export,
@@ -13,7 +13,7 @@ from utils.export_utils import (
     create_summary_statistics,
     filter_dataframe
 )
-from config.settings import SESSION_KEYS, EXCEL_FILENAME, CSV_FILENAME, JSON_FILENAME
+from config.settings import SESSION_KEYS
 from config.criteria_definitions import CRITERIA_ORDER
 
 st.set_page_config(page_title="Export Results", page_icon="💾", layout="wide")
@@ -106,12 +106,38 @@ with export_col2:
     st.markdown("##### Preview (eerste 5 rijen)")
     preview_cols = ['id', 'label', 'quality_score', 'necessary', 'unambiguous', 'complete', 'singular']
     preview_cols = [col for col in preview_cols if col in filtered_df.columns]
-    st.dataframe(filtered_df[preview_cols].head(), use_container_width=True)
+    st.dataframe(filtered_df[preview_cols].head(), width='stretch')
 
 st.markdown("---")
 
+# Filename configuration
+st.markdown("### 📝 Bestandsnaam Configuratie")
+
+# Get original filename from session state - always use as default base name
+original_filename = st.session_state.get(SESSION_KEYS['uploaded_filename'])
+if original_filename:
+    # Remove extension (.txt or .ttl) - this is the default base name
+    base_name = os.path.splitext(original_filename)[0]
+    st.info(f"📁 Standaard basisnaam: `{base_name}` (van geüpload bestand `{original_filename}`)")
+else:
+    # If no filename found, show warning but still allow export with a default
+    st.warning("⚠️ Geen originele bestandsnaam gevonden. Upload het bestand opnieuw voor de juiste bestandsnaam.")
+    base_name = 'ISO29148_Analysis'
+
 # Generate timestamp for filename
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Show preview of default filename
+default_filename_example = f"{base_name}_powerbid_{timestamp}"
+st.caption(f"💡 Standaard bestandsnaam: `{default_filename_example}.{{extensie}}`")
+
+# Custom filename input - overrides the default if provided
+custom_filename = st.text_input(
+    "Aangepaste bestandsnaam (optioneel)",
+    value="",
+    help="Laat leeg om automatische naam te gebruiken (`{basisnaam}_powerbid_{{timestamp}}.{{ext}}`). Extensie wordt automatisch toegevoegd.",
+    placeholder="Laat leeg voor automatische naam"
+)
 
 # Export buttons
 st.markdown("### 📥 Download")
@@ -119,52 +145,70 @@ st.markdown("### 📥 Download")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if export_format == "Excel (.xlsx)" or st.button("📊 Download Excel", use_container_width=True, type="primary" if export_format == "Excel (.xlsx)" else "secondary"):
+    if export_format == "Excel (.xlsx)" or st.button("📊 Download Excel", width='stretch', type="primary" if export_format == "Excel (.xlsx)" else "secondary"):
         with st.spinner("Excel bestand genereren..."):
             excel_data = create_excel_export(filtered_df, requirements)
 
-        filename = f"ISO29148_Analysis_{timestamp}.xlsx"
+        # Generate filename
+        if custom_filename and custom_filename.strip():
+            filename = custom_filename.strip()
+            if not filename.endswith('.xlsx'):
+                filename = f"{filename}.xlsx"
+        else:
+            filename = f"{base_name}_powerbid_{timestamp}.xlsx"
 
         st.download_button(
             label="⬇️ Download Excel",
             data=excel_data,
             file_name=filename,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+            width='stretch'
         )
         st.success("✅ Excel bestand klaar voor download")
 
 with col2:
-    if export_format == "CSV" or st.button("📄 Download CSV", use_container_width=True, type="primary" if export_format == "CSV" else "secondary"):
+    if export_format == "CSV" or st.button("📄 Download CSV", width='stretch', type="primary" if export_format == "CSV" else "secondary"):
         include_justifications = st.checkbox("Inclusief justifications", value=True, key="csv_just")
 
         with st.spinner("CSV bestand genereren..."):
             csv_data = create_csv_export(filtered_df, include_justifications=include_justifications)
 
-        filename = f"ISO29148_Analysis_{timestamp}.csv"
+        # Generate filename
+        if custom_filename and custom_filename.strip():
+            filename = custom_filename.strip()
+            if not filename.endswith('.csv'):
+                filename = f"{filename}.csv"
+        else:
+            filename = f"{base_name}_powerbid_{timestamp}.csv"
 
         st.download_button(
             label="⬇️ Download CSV",
             data=csv_data,
             file_name=filename,
             mime="text/csv",
-            use_container_width=True
+            width='stretch'
         )
         st.success("✅ CSV bestand klaar voor download")
 
 with col3:
-    if export_format == "JSON" or st.button("🔧 Download JSON", use_container_width=True, type="primary" if export_format == "JSON" else "secondary"):
+    if export_format == "JSON" or st.button("🔧 Download JSON", width='stretch', type="primary" if export_format == "JSON" else "secondary"):
         with st.spinner("JSON bestand genereren..."):
             json_data = create_json_export(filtered_df)
 
-        filename = f"ISO29148_Analysis_{timestamp}.json"
+        # Generate filename
+        if custom_filename and custom_filename.strip():
+            filename = custom_filename.strip()
+            if not filename.endswith('.json'):
+                filename = f"{filename}.json"
+        else:
+            filename = f"{base_name}_powerbid_{timestamp}.json"
 
         st.download_button(
             label="⬇️ Download JSON",
             data=json_data,
             file_name=filename,
             mime="application/json",
-            use_container_width=True
+            width='stretch'
         )
         st.success("✅ JSON bestand klaar voor download")
 
@@ -216,8 +260,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🔗 Quick Links")
 
-    if st.button("📊 Naar Dashboard", use_container_width=True):
+    if st.button("📊 Naar Dashboard", width='stretch'):
         st.switch_page("pages/3_📊_Dashboard.py")
 
-    if st.button("📋 Naar Resultaten", use_container_width=True):
+    if st.button("📋 Naar Resultaten", width='stretch'):
         st.switch_page("pages/4_📋_Results.py")

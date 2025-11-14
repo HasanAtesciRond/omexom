@@ -43,6 +43,7 @@ if uploaded_file is not None:
 
         # Store in session state
         st.session_state[SESSION_KEYS['uploaded_file']] = tmp_file_path
+        st.session_state[SESSION_KEYS['uploaded_filename']] = uploaded_file.name
 
         # Validation
         st.markdown("### 2. Validatie")
@@ -158,7 +159,7 @@ if uploaded_file is not None:
                     Ga naar de **⚙️ Analysis** pagina om de analyse te starten.
                     """)
 
-                    if st.button("➡️ Naar Analyse Pagina", type="primary", use_container_width=True):
+                    if st.button("➡️ Naar Analyse Pagina", type="primary", width='stretch'):
                         st.switch_page("pages/2_⚙️_Analysis.py")
 
 else:
@@ -204,6 +205,7 @@ with st.sidebar:
 
     if st.button("🗑️ Reset / Nieuwe Upload"):
         st.session_state[SESSION_KEYS['uploaded_file']] = None
+        st.session_state[SESSION_KEYS['uploaded_filename']] = None
         st.session_state[SESSION_KEYS['requirements']] = None
         st.session_state[SESSION_KEYS['analysis_results']] = None
         st.rerun()

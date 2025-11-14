@@ -3,9 +3,9 @@ Configuration settings for ISO 29148 Requirements Analyzer
 """
 
 # Azure OpenAI Configuration
-DEFAULT_AZURE_ENDPOINT = "https://salesassistantllm.openai.azure.com/"
-DEFAULT_API_VERSION = "2024-12-01-preview"
-DEFAULT_MODEL_NAME = "o3-mini-1"
+DEFAULT_AZURE_ENDPOINT = "https://omexompowerbid.services.ai.azure.com/"
+DEFAULT_API_VERSION = "2025-08-07"
+DEFAULT_MODEL_NAME = "gpt-5-mini"
 
 # Analysis Configuration
 DEFAULT_BATCH_SIZE = 5
@@ -45,6 +45,7 @@ QUALITY_THRESHOLDS = {
 # Session State Keys
 SESSION_KEYS = {
     'uploaded_file': 'uploaded_file_path',
+    'uploaded_filename': 'uploaded_filename_original',
     'requirements': 'parsed_requirements',
     'analysis_results': 'analysis_df',
     'analyzer_config': 'analyzer_config',

@@ -47,7 +47,7 @@ with col2:
     fail_count = len(df) - pass_count
 
     fig = create_donut_chart(pass_count, fail_count, criterion_info['name'])
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 st.markdown("---")
 
@@ -110,5 +110,5 @@ with st.sidebar:
         if criterion == selected_criterion:
             st.markdown(f"**👉 {info['icon']} {info['name_nl']}**")
         else:
-            if st.button(f"{info['icon']} {info['name_nl']}", key=f"nav_{criterion}", use_container_width=True):
+            if st.button(f"{info['icon']} {info['name_nl']}", key=f"nav_{criterion}", width='stretch'):
                 st.rerun()
