@@ -20,7 +20,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.image("Omexom-site-corp@2x-1.webp")
+left_co, cent_co, last_co = st.columns(3)
+with cent_co:
+    st.image("Omexom-site-corp@2x-1.webp")
 
 
 # Initialize session state
@@ -113,11 +115,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Main page content
-st.markdown('<div class="main-header">📊 OMEXOM Tender Analysis </div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">📊 PowerBid Requirement Analyzer</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">AI-driven Tender Analysis Tool</div>', unsafe_allow_html=True)
-st.markdown("Powered By")
-st.markdown("Business Analytics Amersfoort")
-st.image("axians-1-1.webp", width=150)
+
+
+
+
+# st.markdown("Powered By Business Analytics Amersfoort")
+# st.image("axians-1-1.webp", width=150)
 
 
 # Navigation instructions
@@ -129,7 +134,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown("""
     <div class="info-box">
-    <h3>👋 Welkom bij de Requirements Quality Analyzer</h3>
+    <h3>👋 Welkom bij de PowerBid Requirements Quality Analyzer</h3>
     <p>Deze applicatie analyseert uw requirements volgens de <b>ISO/IEC/IEEE 29148</b> standaard
     en beoordeelt ze op 8 kwaliteitscriteria:</p>
     <ul>
@@ -308,4 +313,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**Versie:** 1.0.0")
-    st.markdown("**Laatste update:** 2025-10-16")
+    st.markdown("**Laatste update:** 2025-11-14")
+    
+    st.markdown("Powered By Business Analytics Amersfoort")
+    st.image("axians-1-1.webp", width=150)

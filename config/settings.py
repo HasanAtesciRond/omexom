@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = ['.txt']
 PREVIEW_ROWS = 10
 
 # UI Configuration
-PAGE_TITLE = "ISO 29148 Requirements Quality Analyzer"
+PAGE_TITLE = "Omexom PowerBid Requirements Quality Analyzer"
 PAGE_ICON = "📊"
 LAYOUT = "wide"
 
